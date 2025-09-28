@@ -1,5 +1,3 @@
-# Airbnb_Review_Scores_ML
-Machine Learning + Sentiment Analysis to identify drivers of Airbnb guest review scores.
 # 🏡 Exploring the Key Drivers of Airbnb Review Scores: A Machine Learning Approach with Sentiment Integration
 
 **Author:** Sarika Gaind  
