@@ -1,0 +1,17 @@
+{
+  "model_id": "sgaind-dataai/distilbert-airbnb-listing-quality",
+  "test_reviews": 3139,
+  "onnx_fp32": {
+    "size_mb": 267.9,
+    "accuracy": 0.704,
+    "f1_macro": 0.704,
+    "latency_ms_p50_single": 3.2
+  },
+  "onnx_int8": {
+    "size_mb": 67.4,
+    "accuracy": 0.6993,
+    "f1_macro": 0.6992,
+    "latency_ms_p50_single": 2.4
+  },
+  "int8_vs_fp32_prediction_agreement": 0.9564
+}

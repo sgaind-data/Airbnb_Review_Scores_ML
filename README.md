@@ -69,6 +69,20 @@ entities agree: top-tier reviews name a **person** (usually the host) 1.8× more
 mention **money** 5.5× and **times** 1.9× more often, i.e. fees and waiting. This matches the model's confident
 errors in [Key findings](#key-findings).
 
+## Model optimisation (ONNX + int8)
+
+[scripts/export_onnx.py](scripts/export_onnx.py) exports the model to ONNX, checks it against PyTorch (max logit
+difference 6e-07), applies dynamic int8 quantization, and re-scores the full test set. Results in
+[reports/onnx_metrics.json](reports/onnx_metrics.json):
+
+| Version | Size | Accuracy | Macro F1 | Latency, 1 review (CPU) |
+| --- | --- | --- | --- | --- |
+| ONNX fp32 | 268 MB | 0.704 | 0.704 | 3.2 ms |
+| **ONNX int8** | **67 MB** | **0.699** | **0.699** | **2.4 ms** |
+
+Quantization makes the model 4× smaller for half a point of accuracy (the two versions agree on 95.6% of
+test reviews). The int8 model is what the live demo runs in the browser with Transformers.js.
+
 ## Serving performance
 
 Load test against the API ([scripts/load_test.py](scripts/load_test.py)): 200 requests, 8 concurrent clients,
@@ -93,7 +107,8 @@ flowchart LR
     B --> G[ner.py<br/>spaCy + EntityRuler]
     F --> H[FastAPI service<br/>/predict /health /stats]
     H --> I[Docker image]
-    I --> J[Hugging Face Space<br/>live demo]
+    F --> L[ONNX export<br/>int8 quantization]
+    L --> J[Static Hugging Face Space<br/>runs in the browser]
     H --> K[Prediction log<br/>PSI drift check]
 ```
 
@@ -110,7 +125,8 @@ flowchart LR
 | API | FastAPI with input validation (1–32 texts, ≤ 5,000 chars), request IDs, structured access logs |
 | Performance | 179 requests/s, p95 55 ms on a laptop CPU (see above) |
 | Monitoring | `/stats` rolling window (volume, class share, p50/p95 latency); JSON-lines prediction log without raw text; PSI drift check against the test set |
-| Deployment | CPU Docker image with the model baked in, non-root user, health check; Hugging Face Space pinned to release `v1.0.0` |
+| Deployment | CPU Docker image with the model baked in, non-root user, health check (built and smoke-tested in CI). Live demo: int8 ONNX model running client-side with Transformers.js on a free static Hugging Face Space |
+| Model optimisation | ONNX export + dynamic int8 quantization ([scripts/export_onnx.py](scripts/export_onnx.py)); accuracy cost measured on the test set ([reports/onnx_metrics.json](reports/onnx_metrics.json)) |
 
 ## Quick start
 
@@ -136,10 +152,10 @@ configs/            data, training and amenity settings
 src/airbnb_nlp/     data · baseline · train · evaluate · ner · inference · api · monitoring
 tests/              unit tests (run in CI)
 notebooks/          Colab notebook for GPU training, evaluation and publishing
-scripts/            data profiling, load test
+scripts/            data profiling, load test, ONNX export
 reports/            metrics, confusion matrix, error analysis, amenity analysis
 docs/               data contract, model card
-space/              Hugging Face Space files
+space/              static Hugging Face Space (browser demo)
 original_analysis/  the original academic project (Random Forest on listing features)
 ```
 
@@ -158,7 +174,7 @@ exposed issues that inflated that number, and this project fixes them:
 
 - Listing-level labels are noisy. Next: score a listing by averaging its reviews' predictions, or use per-review star ratings.
 - Dallas only, English only. Next: other Inside Airbnb cities to test generalisation.
-- Serving: export to ONNX and quantise for lower CPU latency.
+- Serving: host the FastAPI container on a paid tier or a cloud VM when a public API is needed; the free demo runs the model in the browser instead.
 
 ## Data and licence
 
