@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import math
 from pathlib import Path
 
 import pandas as pd
@@ -54,13 +55,17 @@ def train(data_dir: Path, output_dir: Path, cfg: dict) -> dict:
         cfg["model_name"], num_labels=2, id2label=id2label,
         label2id={v: k for k, v in id2label.items()},
     )
+    # Convert the warmup ratio to steps: works on every transformers version
+    # (v5 removed the warmup_ratio argument).
+    steps_per_epoch = math.ceil(len(ds["train"]) / cfg["batch_size"])
+    warmup_steps = int(cfg["warmup_ratio"] * steps_per_epoch * cfg["epochs"])
     args = TrainingArguments(
         output_dir=str(output_dir / "checkpoints"),
         num_train_epochs=cfg["epochs"],
         per_device_train_batch_size=cfg["batch_size"],
         per_device_eval_batch_size=cfg["batch_size"] * 2,
         learning_rate=cfg["learning_rate"],
-        warmup_ratio=cfg["warmup_ratio"],
+        warmup_steps=warmup_steps,
         weight_decay=cfg["weight_decay"],
         eval_strategy="epoch",
         save_strategy="epoch",
