@@ -4,7 +4,7 @@
 - Inside Airbnb (insideairbnb.com), Dallas, TX — scrape of June 2024 (scrape_id 20240619201441)
 - Licensed CC BY 4.0 by Inside Airbnb; attribution required
 - File: `Dallas_Airbnb.csv` (reviews pre-joined to listings, 81 columns, ~633 MB)
-- Not stored in Git. Download from the project's Google Drive folder into `data/raw/`
+- Not stored in Git. Download from the [project's Google Drive folder](https://drive.google.com/drive/folders/13pYovFwyjd87VZBGFgblgFNI_ABXZNvN?usp=drive_link) into `data/raw/`
 
 ## Required columns
 | Column | Type | Meaning |

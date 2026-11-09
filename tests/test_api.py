@@ -55,4 +55,5 @@ def test_stats_track_predictions(client):
 
 
 def test_demo_page(client):
-    assert "Airbnb review quality" in client.get("/").text
+    r = client.get("/")
+    assert r.status_code == 200 and "Read a review. Guess the listing." in r.text

@@ -1,7 +1,7 @@
 """REST API for the review classifier.
 
 Endpoints
-  GET  /          small demo page
+  GET  /          demo page (src/airbnb_nlp/static/demo.html)
   GET  /health    liveness + model info
   POST /predict   {"texts": ["..."]} -> label + probability per text
   GET  /stats     rolling monitoring summary (volume, class share, latency)
@@ -17,6 +17,7 @@ import os
 import time
 import uuid
 from contextlib import asynccontextmanager
+from importlib import resources
 from typing import Annotated, Protocol
 
 from fastapi import FastAPI, HTTPException, Request
@@ -117,32 +118,7 @@ def create_app(predictor: PredictorLike | None = None, monitor: PredictionMonito
     return app
 
 
-DEMO_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Airbnb Review Quality</title>
-<style>
- body{font-family:system-ui,sans-serif;max-width:680px;margin:40px auto;padding:0 16px;color:#1f2937}
- textarea{width:100%;height:120px;font:inherit;padding:10px;border:1px solid #d1d5db;border-radius:8px}
- button{margin-top:10px;padding:10px 18px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font:inherit}
- #out{margin-top:18px;font-size:1.1rem} small{color:#6b7280} a{color:#1d4ed8}
-</style></head><body>
-<h1>Airbnb review quality</h1>
-<p>Paste a guest review. A fine-tuned DistilBERT predicts whether it comes from a
-<b>below-par</b> (rating &le; 4.6) or <b>top-tier</b> (&ge; 4.9) Dallas listing.</p>
-<textarea id="t">Great location, but the sheets were dirty and we had to pay extra for parking.</textarea>
-<button onclick="go()">Predict</button><div id="out"></div>
-<p><small><a href="/docs">API docs</a> &middot; <a href="/stats">monitoring stats</a> &middot;
-<a href="https://github.com/sgaind-data/Airbnb_Review_Scores_ML">source code</a></small></p>
-<script>
-async function go(){
- const out=document.getElementById('out'); out.textContent='Scoring...';
- const r=await fetch('/predict',{method:'POST',headers:{'Content-Type':'application/json'},
-   body:JSON.stringify({texts:[document.getElementById('t').value]})});
- if(!r.ok){out.textContent='Error '+r.status;return}
- const p=(await r.json()).predictions[0];
- out.innerHTML='<b>'+p.label.replace('_','-')+'</b> &middot; P(top-tier) = '+p.prob_top_tier.toFixed(2);
-}
-</script></body></html>"""
+DEMO_PAGE = (resources.files("airbnb_nlp") / "static" / "demo.html").read_text(encoding="utf-8")
 
 logging.basicConfig(level=os.environ.get("LOG_LEVEL", "INFO"),
                     format="%(asctime)s %(levelname)s %(name)s %(message)s")

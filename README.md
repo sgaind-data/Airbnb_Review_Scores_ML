@@ -3,12 +3,15 @@
 [![CI](https://github.com/sgaind-data/Airbnb_Review_Scores_ML/actions/workflows/ci.yml/badge.svg)](https://github.com/sgaind-data/Airbnb_Review_Scores_ML/actions/workflows/ci.yml)
 [![Model on Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20model-distilbert--airbnb--listing--quality-blue)](https://huggingface.co/sgaind-dataai/distilbert-airbnb-listing-quality)
 [![Live demo](https://img.shields.io/badge/%F0%9F%A4%97%20Space-live%20demo-indigo)](https://huggingface.co/spaces/sgaind-dataai/airbnb-review-quality)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/sgaind-data/Airbnb_Review_Scores_ML/blob/main/notebooks/train_on_colab.ipynb)
 
 **Can a guest's review tell a below-par Airbnb listing from a top-tier one?** This project fine-tunes
 DistilBERT on 15,694 Dallas Airbnb reviews, beats a VADER sentiment baseline by **+9.6 points of macro F1**,
 analyses amenity mentions with spaCy NER, and serves the model as a tested, monitored, containerised API.
 
-**Author:** Sarika Gaind · Built entirely on free tools (Colab T4, Hugging Face Hub and Spaces, GitHub Actions).
+**Try it:** [live demo](https://huggingface.co/spaces/sgaind-dataai/airbnb-review-quality). Paste a review and see the verdict.
+
+**Author:** Sarika Gaind. Built entirely on free tools (Colab T4, Hugging Face Hub and Spaces, GitHub Actions).
 
 ## Results
 
@@ -124,7 +127,7 @@ curl -X POST localhost:8000/predict -H 'Content-Type: application/json' \
   -d '{"texts": ["Spotless and the host was lovely", "Dusty room and we paid extra for parking"]}'
 ```
 
-Training runs on Colab's free GPU: open [notebooks/02_train_colab.ipynb](notebooks/02_train_colab.ipynb) and run the cells in order.
+Training runs on Colab's free GPU: open [notebooks/train_on_colab.ipynb](notebooks/train_on_colab.ipynb) and run the cells in order.
 
 ## Repository layout
 
