@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "airbnb-nlp"
 version = "0.1.0"
 description = "Classify below-par vs top-tier Airbnb listings from review text"
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10,<3.14"
 dependencies = [
     "pandas>=2.2",
     "numpy>=1.26",
@@ -16,6 +16,12 @@ dependencies = [
 
 [project.optional-dependencies]
 baseline = ["vaderSentiment>=3.3.2"]
+train = [
+    "transformers>=4.46",
+    "datasets>=3.0",
+    "accelerate>=1.0",
+    "matplotlib>=3.8",
+]
 dev = ["pytest>=8.0", "ruff>=0.5"]
 
 [tool.setuptools.packages.find]

@@ -11,3 +11,4 @@ models/
 mlruns/
 *.ckpt
 *.safetensors
+reports/test_predictions.csv

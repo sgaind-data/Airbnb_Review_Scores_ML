@@ -16,3 +16,12 @@ def classification_metrics(y_true: Sequence[int], y_pred: Sequence[int]) -> dict
         "confusion_matrix": confusion_matrix(y_true, y_pred, labels=[0, 1]).tolist(),
         "n": len(y_true),
     }
+
+
+def metrics_from_logits(logits, labels) -> dict:
+    """Hugging Face Trainer hook: logits -> the same metrics (without the matrix) per epoch."""
+    import numpy as np
+
+    preds = np.asarray(logits).argmax(axis=-1)
+    m = classification_metrics(np.asarray(labels), preds)
+    return {k: v for k, v in m.items() if k in ("accuracy", "f1_macro", "f1_low", "f1_high")}
