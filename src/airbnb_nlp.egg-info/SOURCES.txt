@@ -1,0 +1,15 @@
+LICENSE
+README.md
+pyproject.toml
+src/airbnb_nlp/__init__.py
+src/airbnb_nlp/baseline.py
+src/airbnb_nlp/config.py
+src/airbnb_nlp/data.py
+src/airbnb_nlp/metrics.py
+src/airbnb_nlp.egg-info/PKG-INFO
+src/airbnb_nlp.egg-info/SOURCES.txt
+src/airbnb_nlp.egg-info/dependency_links.txt
+src/airbnb_nlp.egg-info/requires.txt
+src/airbnb_nlp.egg-info/top_level.txt
+tests/test_baseline.py
+tests/test_data.py

@@ -1,0 +1,11 @@
+pandas>=2.2
+numpy>=1.26
+scikit-learn>=1.4
+pyyaml>=6.0
+
+[baseline]
+vaderSentiment>=3.3.2
+
+[dev]
+pytest>=8.0
+ruff>=0.5
