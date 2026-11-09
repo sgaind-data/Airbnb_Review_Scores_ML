@@ -1,5 +1,5 @@
 # Shortcuts. Run `make help` to list them.
-.PHONY: help setup test lint data baseline ner api load-test drift
+.PHONY: help setup test lint data baseline ner api load-test drift onnx
 
 help:
 	@grep -E '^[a-z-]+:.*##' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  make %-10s %s\n", $$1, $$2}'
@@ -27,3 +27,6 @@ load-test: ## load test a running API
 
 drift:     ## compare live predictions with the test set (PSI)
 	python -m airbnb_nlp.monitoring
+
+onnx:      ## export to ONNX, quantize to int8, evaluate (add ARGS=--upload to publish)
+	python scripts/export_onnx.py $(ARGS)

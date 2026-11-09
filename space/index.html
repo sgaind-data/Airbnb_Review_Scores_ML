@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review Reader</title>
+<meta name="description" content="Paste an Airbnb guest review and a fine-tuned DistilBERT guesses whether it comes from a below-par or top-tier listing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef2ef;
+    --card: #ffffff;
+    --ink: #1e2a3a;
+    --ink-soft: #536173;
+    --rule: #d6dfd9;
+    --top: #1f6f54;
+    --low: #8a2e4b;
+    --focus: #3b6fd8;
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #141b22; --card: #1c252e; --ink: #e6ebe8; --ink-soft: #9aa7b2;
+      --rule: #2e3a44; --top: #5cc29a; --low: #e48aa6; --focus: #8fb0ff;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 400 1rem/1.55 var(--sans);
+  }
+  main { max-width: 44rem; margin: 0 auto; padding: 3.5rem 1rem 3rem; }
+  .kicker { margin: 0 0 .75rem; color: var(--ink-soft); font-size: .9375rem; }
+  h1 {
+    margin: 0 0 1rem; font: 600 clamp(2.25rem, 6vw, 3.25rem)/1.05 var(--serif);
+    letter-spacing: -.015em;
+  }
+  .lede { margin: 0 0 2.25rem; max-width: 34rem; color: var(--ink-soft); font-size: 1.0625rem; }
+
+  /* The guest book card: the review is the hero */
+  .book {
+    position: relative; background: var(--card); border: 1px solid var(--rule);
+    border-radius: 6px; padding: 1.5rem 1.5rem 3.6rem 3.25rem;
+    box-shadow: 0 1px 0 var(--rule), 0 18px 40px -28px rgba(30, 42, 58, .45);
+  }
+  .book::before {
+    content: "\201C"; position: absolute; left: 1rem; top: .35rem;
+    font: 400 4rem/1 var(--serif); color: var(--rule);
+  }
+  label.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  textarea {
+    display: block; width: 100%; min-height: 7.6rem; resize: none; border: 0; outline: 0;
+    background: repeating-linear-gradient(to bottom, transparent 0, transparent calc(1.9rem - 1px), var(--rule) calc(1.9rem - 1px), var(--rule) 1.9rem);
+    background-attachment: local; color: var(--ink);
+    font: 400 1.25rem/1.9rem var(--serif); padding: 0;
+  }
+  .book:focus-within { border-color: var(--focus); }
+  .stamp {
+    position: absolute; right: 1.25rem; bottom: .9rem; padding: .35rem .8rem .4rem;
+    border: 3px double currentColor; border-radius: 4px; transform: rotate(-7deg);
+    font: 600 1.1rem/1 var(--sans); letter-spacing: .02em; opacity: 0; pointer-events: none;
+    background: color-mix(in srgb, var(--card) 80%, transparent);
+  }
+  .stamp.top { color: var(--top); }
+  .stamp.low { color: var(--low); }
+  .stamp.on { opacity: .92; animation: land .32s cubic-bezier(.2, .9, .3, 1.2); }
+  @keyframes land { from { transform: rotate(-14deg) scale(1.6); opacity: 0; } }
+
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .75rem; margin: 1rem 0 0; }
+  .examples { display: flex; flex-wrap: wrap; gap: .5rem; flex: 1 1 auto; align-items: center; }
+  .examples span { color: var(--ink-soft); font-size: .875rem; margin-right: .1rem; }
+  .chip {
+    font: 500 .875rem/1 var(--sans); color: var(--ink); background: transparent;
+    border: 1px solid var(--rule); border-radius: 999px; padding: .5rem .8rem; cursor: pointer;
+  }
+  .chip:hover { border-color: var(--ink-soft); }
+  .go {
+    font: 600 1rem/1 var(--sans); color: var(--card); background: var(--ink);
+    border: 0; border-radius: 6px; padding: .85rem 1.25rem; cursor: pointer;
+  }
+  .go:disabled { opacity: .6; cursor: progress; }
+  .count { color: var(--ink-soft); font-size: .8125rem; min-width: 5.5rem; text-align: right; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* Verdict */
+  .verdict { margin: 2.25rem 0 0; min-height: 8rem; }
+  .verdict h2 { margin: 0 0 1rem; font: 400 1.5rem/1.3 var(--serif); }
+  .verdict h2 b { font-weight: 600; }
+  .scale { position: relative; height: 2.75rem; margin: 0 0 .5rem; }
+  .track {
+    position: absolute; left: 0; right: 0; top: 1.1rem; height: 6px; border-radius: 3px;
+    background: linear-gradient(to right, var(--low), color-mix(in srgb, var(--low) 30%, var(--rule)) 45%, color-mix(in srgb, var(--top) 30%, var(--rule)) 55%, var(--top));
+  }
+  .mid { position: absolute; left: 50%; top: .6rem; width: 1px; height: 1.1rem; background: var(--ink-soft); }
+  .dot {
+    position: absolute; top: .55rem; width: 1.25rem; height: 1.25rem; margin-left: -.625rem;
+    border-radius: 50%; background: var(--card); border: 3px solid var(--ink);
+    left: 50%; transition: left .5s cubic-bezier(.2, .8, .2, 1);
+  }
+  .ends { display: flex; justify-content: space-between; color: var(--ink-soft); font-size: .875rem; }
+  .meta { margin: .9rem 0 0; color: var(--ink-soft); font-size: .875rem; }
+  .error { color: var(--low); }
+  .empty { color: var(--ink-soft); font-style: italic; font-family: var(--serif); font-size: 1.125rem; }
+
+  .about {
+    margin: 3rem 0 0; padding: 1.5rem 0 0; border-top: 1px solid var(--rule);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem 2rem; font-size: .9375rem;
+  }
+  .about p { margin: 0; color: var(--ink-soft); }
+  .about strong { display: block; color: var(--ink); font: 600 1.75rem/1.1 var(--serif); margin-bottom: .25rem; }
+  footer { margin: 2.5rem 0 0; display: flex; flex-wrap: wrap; gap: .5rem 1.25rem; font-size: .9375rem; }
+  footer a { color: var(--ink); text-underline-offset: 3px; text-decoration-color: var(--rule); }
+  footer a:hover { text-decoration-color: currentColor; }
+  footer .ver { color: var(--ink-soft); margin-left: auto; font-size: .8125rem; }
+
+  @media (max-width: 560px) {
+    main { padding-top: 2rem; }
+    .book { padding-left: 1.25rem; padding-bottom: 3.4rem; }
+    .book::before { display: none; }
+    .about { grid-template-columns: 1fr; }
+    .go { width: 100%; }
+    .count { text-align: left; }
+    footer .ver { margin-left: 0; width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .stamp.on { animation: none; }
+    .dot { transition: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <p class="kicker">A fine-tuned DistilBERT, trained on 15,694 Dallas Airbnb reviews</p>
+  <h1>Read a review. Guess the listing.</h1>
+  <p class="lede">Paste what a guest wrote. The model judges whether it sounds like a stay at a
+    below-par listing (rated 4.6 or lower) or a top-tier one (4.9 or higher).</p>
+
+  <form id="form" class="book" autocomplete="off">
+    <label class="sr" for="review">Guest review</label>
+    <textarea id="review" maxlength="5000" spellcheck="true">Great location, but the sheets were dirty and we had to pay extra for parking.</textarea>
+    <div id="stamp" class="stamp" aria-hidden="true"></div>
+  </form>
+
+  <div class="controls">
+    <div class="examples">
+      <span>Try</span>
+      <button type="button" class="chip" data-text="Amazing stay! Spotless home, the host Maria was so welcoming and the hot tub was the best part of our trip. Would book again in a heartbeat.">a glowing stay</button>
+      <button type="button" class="chip" data-text="Good location and easy self check-in. The bed was comfortable, though the wifi kept dropping and the AC struggled in the afternoon heat.">a mixed one</button>
+      <button type="button" class="chip" data-text="The bathroom was dirty, there were no clean towels and the host charged $40 for parking that was supposed to be free. We waited until 5pm to get in.">a complaint</button>
+    </div>
+    <span id="count" class="count" aria-live="polite"></span>
+    <button id="go" class="go" type="submit" form="form" disabled>Loading model…</button>
+  </div>
+
+  <section id="verdict" class="verdict" aria-live="polite">
+    <p class="empty" id="status">Loading the model into your browser (about 70 MB, cached after the first visit)…</p>
+  </section>
+
+  <section class="about" aria-label="How well it works">
+    <p><strong>70.4%</strong> accuracy on 3,139 reviews from 446 listings the model never saw. The 4× smaller
+      copy running in your browser scores 69.9%.</p>
+    <p><strong>+9.6 points</strong> of macro F1 over the best VADER sentiment baseline (60.8%).</p>
+    <p>Every review inherits its listing's average rating, so a delighted guest at a 4.5 listing still counts
+      as below-par. That noise is why accuracy tops out near 70%.</p>
+    <p>What tips it toward below-par: complaints about cleanliness, fees and parking, AC, wifi and check-in.
+      Top-tier reviews name the host and mention extras like hot tubs and coffee.</p>
+  </section>
+
+  <footer>
+    <a href="https://github.com/sgaind-data/Airbnb_Review_Scores_ML">Source code</a>
+    <a href="https://huggingface.co/sgaind-dataai/distilbert-airbnb-listing-quality">Model card</a>
+    <a href="https://github.com/sgaind-data/Airbnb_Review_Scores_ML/releases">Releases</a>
+    <span id="ver" class="ver">Runs in your browser. Your text never leaves this device.</span>
+  </footer>
+</main>
+
+<script type="module">
+  import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1";
+
+  const MODEL = "sgaind-dataai/distilbert-airbnb-listing-quality";
+  env.allowLocalModels = false;
+
+  const $ = (id) => document.getElementById(id);
+  const review = $("review"), go = $("go"), stamp = $("stamp"), verdict = $("verdict");
+  let classify = null;
+
+  function grow() { review.style.height = "auto"; review.style.height = review.scrollHeight + "px"; }
+  function updateCount() { $("count").textContent = review.value.length.toLocaleString() + " / 5,000"; }
+  function clearStamp() { stamp.className = "stamp"; stamp.textContent = ""; }
+  function escapeHtml(s) { return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+
+  function describe(p) {
+    const sure = Math.round(Math.max(p, 1 - p) * 100);
+    if (sure < 60) return "It's close to a coin flip, " + sure + "% either way.";
+    if (sure < 80) return "The model leans this way, " + sure + "% sure.";
+    return "The model is " + sure + "% sure.";
+  }
+
+  async function check(event) {
+    if (event) event.preventDefault();
+    if (!classify) return;
+    const text = review.value.trim();
+    if (!text) {
+      verdict.innerHTML = '<p class="error">Write or paste a review first.</p>';
+      review.focus();
+      return;
+    }
+    go.disabled = true; go.textContent = "Checking…"; clearStamp();
+    try {
+      const start = performance.now();
+      const scores = await classify(text, { top_k: null });
+      const ms = performance.now() - start;
+      const top = scores.find((s) => s.label === "top_tier");
+      const p = top ? top.score : 1 - scores[0].score;
+      const isTop = p >= 0.5;
+      const pct = (p * 100).toFixed(0);
+
+      stamp.textContent = isTop ? "Top-tier" : "Below-par";
+      void stamp.offsetWidth;
+      stamp.className = "stamp on " + (isTop ? "top" : "low");
+
+      verdict.innerHTML =
+        "<h2>Reads like a <b>" + (isTop ? "top-tier" : "below-par") + "</b> listing. " + describe(p) + "</h2>" +
+        '<div class="scale" role="img" aria-label="Probability of top-tier: ' + pct + '%">' +
+          '<div class="track"></div><div class="mid"></div><div class="dot" id="dot"></div></div>' +
+        '<div class="ends"><span>Below-par</span><span>Top-tier</span></div>' +
+        '<p class="meta">Chance of top-tier: ' + pct + "%. Scored in " + Math.round(ms) + " ms on this device.</p>";
+      requestAnimationFrame(() => requestAnimationFrame(() => { $("dot").style.left = (p * 100) + "%"; }));
+    } catch (e) {
+      verdict.innerHTML = '<p class="error">' + escapeHtml("Couldn't score this review: " + (e.message || e)) + "</p>";
+    } finally {
+      go.disabled = false; go.textContent = "Check review";
+    }
+  }
+
+  $("form").addEventListener("submit", check);
+  review.addEventListener("input", () => { updateCount(); grow(); clearStamp(); });
+  review.addEventListener("keydown", (e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) check(e); });
+  document.querySelectorAll(".chip").forEach((b) => b.addEventListener("click", () => {
+    review.value = b.dataset.text; updateCount(); grow(); check();
+  }));
+  updateCount(); grow();
+
+  const loaded = {};
+  try {
+    classify = await pipeline("text-classification", MODEL, {
+      dtype: "q8",
+      progress_callback: (e) => {
+        if (e.status === "progress" && e.total) {
+          loaded[e.file] = [e.loaded, e.total];
+          const [a, t] = Object.values(loaded).reduce((s, [l, tt]) => [s[0] + l, s[1] + tt], [0, 0]);
+          go.textContent = "Loading model… " + Math.round((a / t) * 100) + "%";
+        }
+      },
+    });
+    go.disabled = false; go.textContent = "Check review";
+    $("status").textContent = "Model loaded. Pick an example or paste a review.";
+  } catch (e) {
+    go.textContent = "Model unavailable";
+    $("status").className = "error";
+    $("status").textContent = "The model couldn't load in this browser. Try a recent Chrome, Edge, Firefox or Safari.";
+  }
+</script>
+</body>
+</html>
