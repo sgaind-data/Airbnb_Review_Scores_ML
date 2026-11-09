@@ -32,9 +32,10 @@ print("\nReview-level rating quantiles:")
 print(s.quantile([0.01, 0.05, 0.10, 0.25, 0.50, 0.75]).round(2).to_string())
 
 per_listing = df.drop_duplicates("listing_id")
+lr = per_listing.review_scores_rating
 print("\nCandidate 'low' cut-offs:")
 for t in [4.0, 4.25, 4.5, 4.6, 4.7]:
-    print(f"  rating <= {t}: {(s <= t).sum():>8,} reviews from {(per_listing.review_scores_rating <= t).sum():>6,} listings")
+    print(f"  rating <= {t}: {(s <= t).sum():>8,} reviews from {(lr <= t).sum():>6,} listings")
 print("Candidate 'high' cut-offs:")
 for t in [4.85, 4.9, 4.95]:
-    print(f"  rating >= {t}: {(s >= t).sum():>8,} reviews from {(per_listing.review_scores_rating >= t).sum():>6,} listings")
+    print(f"  rating >= {t}: {(s >= t).sum():>8,} reviews from {(lr >= t).sum():>6,} listings")

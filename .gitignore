@@ -12,3 +12,7 @@ mlruns/
 *.ckpt
 *.safetensors
 reports/test_predictions.csv
+*.egg-info/
+logs/
+.ruff_cache/
+.pytest_cache/
