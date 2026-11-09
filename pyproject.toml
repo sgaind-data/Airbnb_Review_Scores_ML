@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "airbnb-nlp"
+version = "1.0.0"
+description = "Classify below-par vs top-tier Airbnb listings from review text"
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "scikit-learn>=1.4",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+baseline = ["vaderSentiment>=3.3.2"]
+train = [
+    "transformers>=4.46",
+    "datasets>=3.0",
+    "accelerate>=1.0",
+    "matplotlib>=3.8",
+]
+ner = ["spacy>=3.7,<4", "matplotlib>=3.8"]
+inference = ["transformers>=4.46", "torch>=2.2"]
+api = ["fastapi>=0.110", "uvicorn[standard]>=0.29"]
+dev = ["pytest>=8.0", "ruff>=0.5", "httpx>=0.27"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

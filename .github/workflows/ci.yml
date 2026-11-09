@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main, nlp-finetuning]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install
+        run: pip install -e ".[api,dev]"
+      - name: Lint
+        run: ruff check src tests scripts
+      - name: Unit tests
+        run: pytest
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t airbnb-nlp-api .
+      - name: Smoke test the running container
+        run: |
+          docker run -d -p 7860:7860 --name api airbnb-nlp-api
+          for i in $(seq 1 30); do curl -sf localhost:7860/health && break; sleep 2; done
+          curl -sf -X POST localhost:7860/predict -H 'Content-Type: application/json' \
+            -d '{"texts": ["Spotless and lovely host", "Dirty sheets and broken AC"]}' | tee out.json
+          grep -q prob_top_tier out.json
+      - name: Container logs
+        if: always()
+        run: docker logs api || true

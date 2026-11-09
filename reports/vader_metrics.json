@@ -1,0 +1,38 @@
+{
+  "vader_default": {
+    "threshold": 0.05,
+    "accuracy": 0.5473,
+    "f1_macro": 0.4365,
+    "f1_low": 0.1866,
+    "f1_high": 0.6864,
+    "confusion_matrix": [
+      [
+        163,
+        1406
+      ],
+      [
+        15,
+        1555
+      ]
+    ],
+    "n": 3139
+  },
+  "vader_tuned": {
+    "threshold": 0.88,
+    "accuracy": 0.6078,
+    "f1_macro": 0.6076,
+    "f1_low": 0.5973,
+    "f1_high": 0.6178,
+    "confusion_matrix": [
+      [
+        913,
+        656
+      ],
+      [
+        575,
+        995
+      ]
+    ],
+    "n": 3139
+  }
+}

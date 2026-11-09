@@ -1,0 +1,10 @@
+# Fine-tuning settings for distilbert-base-uncased. Sized for one free Colab T4 session.
+model_name: distilbert-base-uncased
+max_length: 256          # covers the vast majority of reviews; longer ones are truncated
+batch_size: 32
+learning_rate: 2.0e-5
+epochs: 3
+warmup_ratio: 0.1
+weight_decay: 0.01
+seed: 42
+labels: {0: below_par, 1: top_tier}

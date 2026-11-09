@@ -1,0 +1,15 @@
+# Amenity phrases for the spaCy EntityRuler (matched case-insensitively).
+# Category name -> phrases that count as a mention of it.
+wifi: [wifi, wi-fi, wi fi, internet]
+parking: [parking, garage, driveway, parking spot, parking lot, street parking]
+pool: [pool, swimming pool]
+hot_tub: [hot tub, jacuzzi]
+kitchen: [kitchen, stove, oven, microwave, dishwasher, cookware]
+laundry: [washer, dryer, laundry, washing machine]
+air_conditioning: [ac, a/c, air conditioning, air conditioner, thermostat]
+tv: [tv, television, netflix, smart tv]
+coffee: [coffee, coffee maker, keurig, nespresso]
+workspace: [desk, workspace]
+self_check_in: [self check-in, self check in, keypad, lockbox, smart lock, door code]
+bed: [bed, beds, mattress, pillows]
+bathroom: [shower, bathroom, towels, hot water]

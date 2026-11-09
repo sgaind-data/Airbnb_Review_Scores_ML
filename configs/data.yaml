@@ -1,0 +1,16 @@
+# Data pipeline settings. Change values here, never in code.
+raw_path: data/raw/Dallas_Airbnb.csv
+processed_dir: data/processed
+date_format: "%m/%d/%y"     # file uses 2-digit years, e.g. 1/6/24
+
+# Labels from the listing's overall rating (0-5). Reviews in the gap are dropped.
+low_max: 4.6                # rating <= low_max  -> label 0 (below-par)
+high_min: 4.9               # rating >= high_min -> label 1 (top-tier)
+
+min_words: 5                # drop very short reviews
+max_per_listing: 25         # cap so popular listings don't dominate
+per_class: 12000            # balanced sample size per label (capped by what exists)
+
+test_size: 0.2
+val_size: 0.1
+seed: 42

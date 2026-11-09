@@ -1,0 +1,11 @@
+.venv
+.git
+data
+models
+logs
+reports
+notebooks
+original_analysis
+tests
+**/__pycache__
+*.egg-info
